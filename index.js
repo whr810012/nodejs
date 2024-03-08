@@ -59,6 +59,57 @@ app.post('/register', async (req, res) => {
     
 
   });
+
+  app.post('/addgoods', async (req, res) => {
+
+    // console.log('===',req.body);
+    const shopid = req.body.userid
+    const goodsname = req.body.goodsname
+    const username = req.body.shopname
+    const shopprice = req.body.goodsprice
+    const longitude = req.body.longitude
+    const latitude = req.body.latitude
+    const address = req.body.address
+    const goodsclass = req.body.goodsclass
+    const title = req.body.goodstitle
+    const img = req.body.goods_img
+    // 将一个字符串数组转换为字符串，中间用逗号隔开
+    const imglist = img.join(',')
+    console.log(imglist);
+
+    // const userid = req.body.code
+// return
+    
+    
+      // 在这里可以添加更多的验证逻辑，如检查用户名是否已经存在等
+      try {
+        const sql = `INSERT INTO goods (username,shopprice,longitude,latitude,address,class,title,img,userid,goodsname) VALUES ( ?, ?,?,?,?,?,?,?,?,?)`;
+        const result = await executeQuery(sql, [ username, shopprice, longitude, latitude, address, goodsclass, title, imglist,shopid,goodsname]);
+        
+        res.status(201).json({ message: '添加成功', data: result });
+      } catch (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ message: '注册失败' });
+      }
+    })
+   
+    app.get('/getgoods', async (req, res) => {
+      try {
+        const sql = `SELECT * FROM goods;`//sql语句 搜索test表所有数据
+        const result = await executeQuery(sql)//执行sql语句
+        const data = result.map((row) => ({ ...row, img: row.img.split(',') }));
+
+        res.send({
+          data:data,
+          code: 200,
+        })
+      } catch (error) {
+        console.error('Error executing query:', error)
+        res.status(500).send('Internal Server Error')
+      }
+    })    
+
+ 
  
 app.listen('3000', () => {
   console.log(`node服务已启动 端口号是：3000`)
