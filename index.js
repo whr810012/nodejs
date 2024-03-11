@@ -59,7 +59,25 @@ app.post('/register', async (req, res) => {
     
 
   });
+
+
+  app.get('/getaititle', async (req, res) => {
+    try {
+      const str = req.str
+
+     
+  
+      res.send({
+        aititle,
+        code: 200,
+      })
+    } catch (error) {
+      console.error('Error executing query:', error)
+      res.status(500).send('Internal Server Error')
+    }
+  })
  
+
 app.listen('3000', () => {
   console.log(`node服务已启动 端口号是：3000`)
 })
