@@ -172,6 +172,24 @@ const userid = req.body.userid;
   }
 });
 
+app.post("/deletegoods", async (req, res) =>
+ { const shopid = req.body.shopid; 
+try { 
+// 执行删除操作的SQL语句 
+const sql = "DELETE FROM `goods` WHERE shopid = ?";
+ // 执行SQL语句，并传入商品ID作为参数 
+const result = await executeQuery(sql, [shopid]); 
+// 检查受影响的行数，如果大于0则表示删除成功，否则表示删除失败 
+if (result.affectedRows > 0) { 
+res.status(200).json({ message: "商品删除成功" });
+ } else { 
+res.status(404).json({ message: "未找到对应的商品" }); } 
+} catch (error) { 
+console.error("Error executing query:", error);
+ res.status(500).json({ message: "删除商品失败" });
+ } 
+});
+
 app.listen("3000", () => {
   console.log(`node服务已启动 端口号是：3000`);
 });
