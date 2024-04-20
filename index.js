@@ -52,27 +52,44 @@ app.post("/register", async (req, res) => {
       if (!username) {
         return res.status(400).json({ message: "用户名不能为空" });
       }
-
-      // 在这里可以添加更多的验证逻辑，如检查用户名是否已经存在等
-      try {
-        const sql = `INSERT INTO user (userid,username) VALUES ( ?, ?)`;
-        const result = await executeQuery(sql, [userid, username]);
+      // 检查一下数据库是否有这个id
+      const sql1 = `SELECT * FROM user WHERE userid = ?`;
+      const result1 = await executeQuery(sql1, [userid]);
+      if (result1.length > 0) {
+        // 只修改username
+        const sql2 = `UPDATE user SET username = ? WHERE userid = ?`;
+        const result2 = await executeQuery(sql2, [username, userid]);
         let isadmin = false;
-        if (userid === "o_EnM6SJeA7DUdVkuKQZ5NmUNw-s") {
-          isadmin = true;
-        }
+          if (userid === "o_EnM6SJeA7DUdVkuKQZ5NmUNw-s") {
+            isadmin = true;
+          }
 
-        res
-          .status(201)
-          .json({
+          res.status(201).json({
+            message: "注册成功",
+            userId: result2,
+            userid: userid,
+            isadmin: isadmin,
+          });
+      } else {
+        // 在这里可以添加更多的验证逻辑，如检查用户名是否已经存在等
+        try {
+          const sql = `INSERT INTO user (userid,username) VALUES ( ?, ?)`;
+          const result = await executeQuery(sql, [userid, username]);
+          let isadmin = false;
+          if (userid === "o_EnM6SJeA7DUdVkuKQZ5NmUNw-s") {
+            isadmin = true;
+          }
+
+          res.status(201).json({
             message: "注册成功",
             userId: result,
             userid: userid,
             isadmin: isadmin,
           });
-      } catch (error) {
-        console.error("Error executing query:", error);
-        res.status(500).json({ message: "注册失败" });
+        } catch (error) {
+          console.error("Error executing query:", error);
+          res.status(500).json({ message: "注册失败" });
+        }
       }
     })
     .catch((error) => {
