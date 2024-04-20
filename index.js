@@ -7,10 +7,13 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json()); // 使用 express.json() 中间件来解析 JSON 数据
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8071');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:8071");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
   next();
 });
 
@@ -34,7 +37,6 @@ app.post("/register", async (req, res) => {
   console.log("===", req.body.username);
   const username = req.body.username;
   // const userid = req.body.code
-
   axios
     .get("https://api.weixin.qq.com/sns/jscode2session", {
       params: {
@@ -55,14 +57,19 @@ app.post("/register", async (req, res) => {
       try {
         const sql = `INSERT INTO user (userid,username) VALUES ( ?, ?)`;
         const result = await executeQuery(sql, [userid, username]);
-        let isadmin = false
-        if(userid === 'o_EnM6SJeA7DUdVkuKQZ5NmUNw-s'){
-          isadmin = true
+        let isadmin = false;
+        if (userid === "o_EnM6SJeA7DUdVkuKQZ5NmUNw-s") {
+          isadmin = true;
         }
 
         res
           .status(201)
-          .json({ message: "注册成功", userId: result, userid: userid, isadmin: isadmin});
+          .json({
+            message: "注册成功",
+            userId: result,
+            userid: userid,
+            isadmin: isadmin,
+          });
       } catch (error) {
         console.error("Error executing query:", error);
         res.status(500).json({ message: "注册失败" });
@@ -133,7 +140,7 @@ app.get("/getgoods", async (req, res) => {
 
 app.get("/getovergoods", async (req, res) => {
   try {
-    const sql = 'SELECT * FROM `over`'; //sql语句 搜索test表所有数据
+    const sql = "SELECT * FROM `over`"; //sql语句 搜索test表所有数据
     const result = await executeQuery(sql); //执行sql语句
     const data = result.map((row) => ({ ...row, img: row.img.split(",") }));
 
@@ -149,9 +156,9 @@ app.get("/getovergoods", async (req, res) => {
 
 app.post("/addover", async (req, res) => {
   console.log(req.body);
-const shopid = req.body.shopid;
-const overtime = req.body.overtime;
-const buyid = req.body.buyid;
+  const shopid = req.body.shopid;
+  const overtime = req.body.overtime;
+  const buyid = req.body.buyid;
   // const userid = req.body.code
   // return;
 
@@ -160,12 +167,26 @@ const buyid = req.body.buyid;
     const sql1 = `SELECT * FROM goods WHERE shopid = ?`;
     const result = await executeQuery(sql1, [shopid]);
 
-    const sql2 = "INSERT INTO `over` (overtime, buyid, userid, img, shopid, shopprice, address, class, title, longitude, latitude, username, goodsname) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    const result2 = await executeQuery(sql2, [overtime, buyid, result[0].userid, result[0].img, result[0].shopid, result[0].shopprice, 
-      result[0].address,result[0].class, result[0].title, result[0].longitude, result[0].latitude, result[0].username, result[0].goodsname]);
+    const sql2 =
+      "INSERT INTO `over` (overtime, buyid, userid, img, shopid, shopprice, address, class, title, longitude, latitude, username, goodsname) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    const result2 = await executeQuery(sql2, [
+      overtime,
+      buyid,
+      result[0].userid,
+      result[0].img,
+      result[0].shopid,
+      result[0].shopprice,
+      result[0].address,
+      result[0].class,
+      result[0].title,
+      result[0].longitude,
+      result[0].latitude,
+      result[0].username,
+      result[0].goodsname,
+    ]);
 
-      const sql = "DELETE FROM goods WHERE shopid = ?";
-const result3 = await executeQuery(sql, [shopid]);
+    const sql = "DELETE FROM goods WHERE shopid = ?";
+    const result3 = await executeQuery(sql, [shopid]);
 
     res.status(200).json({ message: "交易成功", data: result2 });
   } catch (error) {
@@ -176,7 +197,7 @@ const result3 = await executeQuery(sql, [shopid]);
 
 app.post("/getover", async (req, res) => {
   console.log(req.body);
-const userid = req.body.userid;
+  const userid = req.body.userid;
   // const userid = req.body.code
   // return;
 
@@ -190,49 +211,51 @@ const userid = req.body.userid;
     const result2 = await executeQuery(sql1, [userid]);
     const data2 = result2.map((row) => ({ ...row, img: row.img.split(",") }));
 
-
-
-    res.status(200).json({ message: "交易成功", buygoods: data1 ,maingoods: data2});
+    res
+      .status(200)
+      .json({ message: "交易成功", buygoods: data1, maingoods: data2 });
   } catch (error) {
     console.error("Error executing query:", error);
     res.status(500).json({ message: "获取商品信息失败" });
   }
 });
 
-app.post("/deletegoods", async (req, res) =>
- { const shopid = req.body.shopid; 
-try { 
-// 执行删除操作的SQL语句 
-const sql = "DELETE FROM `goods` WHERE shopid = ?";
- // 执行SQL语句，并传入商品ID作为参数 
-const result = await executeQuery(sql, [shopid]); 
-// 检查受影响的行数，如果大于0则表示删除成功，否则表示删除失败 
-if (result.affectedRows > 0) { 
-res.status(200).json({ message: "商品删除成功" });
- } else { 
-res.status(404).json({ message: "未找到对应的商品" }); } 
-} catch (error) { 
-console.error("Error executing query:", error);
- res.status(500).json({ message: "删除商品失败" });
- } 
+app.post("/deletegoods", async (req, res) => {
+  const shopid = req.body.shopid;
+  try {
+    // 执行删除操作的SQL语句
+    const sql = "DELETE FROM `goods` WHERE shopid = ?";
+    // 执行SQL语句，并传入商品ID作为参数
+    const result = await executeQuery(sql, [shopid]);
+    // 检查受影响的行数，如果大于0则表示删除成功，否则表示删除失败
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: "商品删除成功" });
+    } else {
+      res.status(404).json({ message: "未找到对应的商品" });
+    }
+  } catch (error) {
+    console.error("Error executing query:", error);
+    res.status(500).json({ message: "删除商品失败" });
+  }
 });
 
-app.post("/deleteovergoods", async (req, res) =>
- { const shopid = req.body.shopid; 
-try { 
-// 执行删除操作的SQL语句 
-const sql = "DELETE FROM `over` WHERE shopid = ?";
- // 执行SQL语句，并传入商品ID作为参数 
-const result = await executeQuery(sql, [shopid]); 
-// 检查受影响的行数，如果大于0则表示删除成功，否则表示删除失败 
-if (result.affectedRows > 0) { 
-res.status(200).json({ message: "商品删除成功" });
- } else { 
-res.status(404).json({ message: "未找到对应的商品" }); } 
-} catch (error) { 
-console.error("Error executing query:", error);
- res.status(500).json({ message: "删除商品失败" });
- } 
+app.post("/deleteovergoods", async (req, res) => {
+  const shopid = req.body.shopid;
+  try {
+    // 执行删除操作的SQL语句
+    const sql = "DELETE FROM `over` WHERE shopid = ?";
+    // 执行SQL语句，并传入商品ID作为参数
+    const result = await executeQuery(sql, [shopid]);
+    // 检查受影响的行数，如果大于0则表示删除成功，否则表示删除失败
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: "商品删除成功" });
+    } else {
+      res.status(404).json({ message: "未找到对应的商品" });
+    }
+  } catch (error) {
+    console.error("Error executing query:", error);
+    res.status(500).json({ message: "删除商品失败" });
+  }
 });
 
 app.listen("3000", () => {
